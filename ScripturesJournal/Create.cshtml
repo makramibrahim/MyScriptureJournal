@@ -1,0 +1,66 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Create a Scripture";
+
+    Validation.RequireField("Chapter", "*");
+    Validation.RequireField("Book", "*");
+    Validation.RequireField("Date", "*");
+    Validation.RequireField("Verse", "*");
+    Validation.RequireField("Notes", "*");
+
+    var chapter = "";
+    var book = "";
+    var date = "";
+    var verse = "";
+    var notes = "";
+
+
+    if (IsPost)
+    {
+        if (Validation.IsValid())
+        {
+            chapter = Request.Form["Chapter"];
+            book = Request.Form["Book"];
+            date = Request.Form["Date"];
+            verse = Request.Form["Verse"];
+            notes = Request.Form["Notes"];
+
+            var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MyScripturesJournalDB.sdf", "System.Data.SqlServerCe.4.0");
+            var insertCommand = "INSERT INTO Scripturestb (Chapter, Book, Date, Verse, Notes) VALUES(@0, @1, @2, @3, @4)";
+            db.Execute(insertCommand, chapter, book, date, verse, notes);
+
+            Response.Redirect("~/Index");
+        }
+    }
+}
+
+<div class="container">
+    <h2>Create New Journal</h2><br />
+    <form class="form-group" method="post">
+
+         @Html.ValidationMessage("book")
+        <label class="col-form-label" for="inputDefault">Book</label>
+        <input type="text" class="form-control" placeholder="Book name" name="book" value="@Request.Form["book"]">
+       
+         @Html.ValidationMessage("chapter")
+        <label class="col-form-label" for="inputDefault">Chapter</label>
+        <input type="text" class="form-control" placeholder="Chapter number" name="chapter" value="@Request.Form["chapter"]">
+       
+         @Html.ValidationMessage("notes")
+        <label class="col-form-label" for="inputDefault">Notes</label>
+        <input type="text" class="form-control" placeholder="Your Notes" name="notes" value="@Request.Form["notes"]">
+       
+        @Html.ValidationMessage("date")
+        <label class="col-form-label" for="inputDefault">Date</label>
+        <input type="text" class="form-control" name="date" value="@Request.Form["date"]" placeholder="@DateTime.Now">
+        
+         @Html.ValidationMessage("verse")
+        <label class="col-form-label" for="inputDefault">Verses</label>
+        <textarea type="text" class="form-control" placeholder="Add your Verse" name="verse" value="@Request.Form["verse"]"></textarea>
+       
+        <br>
+        <button class="btn btn-success" type="submit" name="SubmitBtn" value="Add Scripture">Submit</button>
+    </form>
+    <a href="~/Index.cshtml">Return to Scriptures List</a>
+</div>
+

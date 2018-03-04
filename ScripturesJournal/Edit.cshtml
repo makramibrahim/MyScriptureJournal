@@ -1,0 +1,102 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "Edit a Scripture";
+
+    var chapter = "";
+    var book = "";
+    var date = DateTime.Now;
+    var verse = "";
+    var notes = "";
+    var scriptureId = "";
+
+    if (!IsPost)
+    {
+        if (!Request.QueryString["ID"].IsEmpty() && Request.QueryString["ID"].IsInt())
+        {
+            scriptureId = Request.QueryString["ID"];
+            var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MyScripturesJournalDB.sdf", "System.Data.SqlServerCe.4.0");
+            var dbCommand = "SELECT * FROM Scripturestb WHERE ID = @0";
+            var row = db.QuerySingle(dbCommand, scriptureId);
+
+            if (row != null)
+            {
+                chapter = Convert.ToString(row.Chapter);
+                book = row.Book;
+                date = row.Date;
+                verse = row.Verse;
+                notes = row.Notes;
+            }
+            else
+            {
+                Validation.AddFormError("No scripture was selected.");
+
+            }
+        }
+
+        else
+        {
+            Validation.AddFormError("No scripture was selected.");
+
+        }
+    }
+
+    if (IsPost)
+    {
+        Validation.RequireField("Chapter", "*");
+        Validation.RequireField("Book", "*");
+        Validation.RequireField("Date", "*");
+        Validation.RequireField("Verse", "*");
+        Validation.RequireField("Notes", "*");
+
+        chapter = Request.Form["chapter"];
+        book = Request.Form["book"];
+        verse = Request.Form["verse"];
+        notes = Request.Form["notes"];
+
+        scriptureId = Request.Form["scriptureId"];
+
+        if (Validation.IsValid())
+        {
+            var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MyScripturesJournalDB.sdf");
+            var updateCommand = "UPDATE Scripturestb SET Chapter=@0, Book=@1, Verse=@2, Notes=@3 WHERE Id=@4";
+            db.Execute(updateCommand, chapter, book, verse, notes, scriptureId);
+            Response.Redirect("~/Index");
+        }
+    }
+}
+
+
+<div class="container">
+    <h2>Edit Your Scripture</h2><br />
+
+    <form class="form-group" method="post">
+        <fieldset>
+
+            @Html.ValidationMessage("date")
+            <label class="col-form-label" for="inputDefault">Date</label>
+            <input type="text" class="form-control" placeholder="Add your Verse" name="date" value="@date" />
+            @Html.ValidationMessage("book")
+            <label class="col-form-label" for="inputDefault">Book</label>
+            <input type="text" class="form-control" placeholder="Book name" name="book" value="@book">
+
+            @Html.ValidationMessage("chapter")
+            <label class="col-form-label" for="inputDefault">Chapter</label>
+            <input type="text" class="form-control" placeholder="Chapter number" name="chapter" value="@chapter">
+
+            @Html.ValidationMessage("notes")
+            <label class="col-form-label" for="inputDefault">Notes</label>
+            <input type="text" class="form-control" placeholder="Your Notes" name="notes" value="@notes">
+
+            @Html.ValidationMessage("verse")
+            <label class="col-form-label" for="inputDefault">Verses</label>
+            <input type="text" class="form-control" placeholder="Add your Verse" name="verse" value="@verse" />
+
+            <input type="hidden" class="form-control" placeholder="Book name" name="scriptureId" value="@scriptureId">
+            <br />
+
+            <input href="~/Index.cshtml" class="btn btn-success" type="submit" name="SubmitBtn" value="Save Scripture" />
+        </fieldset>
+    </form>
+    <a href="~/Index.cshtml">Return to Scriptures List</a>
+</div>
+

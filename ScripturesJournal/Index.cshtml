@@ -1,0 +1,61 @@
+﻿@{
+    Layout = "~/_Layout.cshtml";
+    Page.Title = "My Scriptures Journal";
+
+    var db = Database.OpenConnectionString("Data Source=|DataDirectory|\\MyScripturesJournalDB.sdf", "System.Data.SqlServerCe.4.0");
+    var selectCommand = "SELECT * FROM Scripturestb";
+    var searchTerm = "";
+
+    if (!Request.QueryString["searchVerse"].IsEmpty())
+    {
+        selectCommand = "SELECT * FROM Scripturestb WHERE Verse LIKE @0 OR Book LIKE @0 OR Date LIKE @0 OR Notes LIKE @0";
+        searchTerm = "%" + Request["searchVerse"] + "%";
+    }
+
+    var selectedData = db.Query(selectCommand, searchTerm);
+    var grid = new WebGrid(source: selectedData, defaultSort: "Verse", rowsPerPage: 4);
+}
+
+<div class="container">
+
+    <div class="jumbotron">
+        <h1 class="text-white">My Study Notebook</h1>
+        <p class="text-white">
+            "Your personal space for gospel notes
+            As you’re reading content on LDS.org, such as
+            scriptures or lessons, you can highlight the content, add
+            a few notes, and save this information to My Study
+            Notebook. My Study Notebook is your own personal,
+            private space on LDS.org to collect your gospel content
+            and notes"(LDS Church).
+        </p>
+        <p><a href="https://www.lds.org/help/support/tools-on-lds/notes-on-ldsorg?lang=eng" class="btn btn-primary btn-lg">Learn more &raquo;</a></p>
+    </div>
+
+    <h2>My Scripture Journal</h2>
+    <form class="form-inline my-2 my-lg-2" method="get">
+        <input class="form-control mr-sm-2" name="searchVerse"
+               value="@Request.QueryString["searchVerse"]" placeholder="Search">
+        <button class="btn btn-secondary my-2 my-sm-0" type="submit">Search</button>
+    </form>
+
+    <div>
+        @grid.GetHtml(
+                       tableStyle: "table-light grid",
+                        headerStyle: "table-primary",
+                        alternatingRowStyle: "table-active",
+                      columns: grid.Columns(
+
+                                      grid.Column("Date"),
+                                      grid.Column("Book"),
+                                      grid.Column("Chapter"),
+                                      grid.Column("Verse"),
+                                      grid.Column("Notes"),
+                                      grid.Column(format: @<a href="~/Delete.cshtml?id=@item.ID">Delete</a>),
+                                     grid.Column(format: @<a href="~/Edit.cshtml?id=@item.ID">Edit</a>)
+
+                                          )
+                                       )
+    </div>
+    <p><a href="~/Create.cshtml">Add a Scripture</a></p>
+</div>
